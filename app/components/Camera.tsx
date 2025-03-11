@@ -51,6 +51,20 @@ export default function Camera({ onCapture, countdown }: CameraProps) {
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return;
 
+    // First pass: Apply blur
+    const blurRadius = 1;
+    ctx.filter = `blur(${blurRadius}px)`;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+    if (!tempCtx) return;
+    
+    tempCtx.drawImage(canvas, 0, 0);
+    ctx.drawImage(tempCanvas, 0, 0);
+    ctx.filter = 'none';
+
+    // Second pass: Apply B&W and other effects
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
@@ -59,16 +73,21 @@ export default function Camera({ onCapture, countdown }: CameraProps) {
       const g = data[i + 1];
       const b = data[i + 2];
       
+      // Convert to black and white with higher contrast
       const gray = (r * 0.299 + g * 0.587 + b * 0.114);
-      const contrast = 1.2;
-      const brightened = Math.min(255, Math.max(0, 
+      const contrast = 1.3; // Increased contrast
+      let brightened = Math.min(255, Math.max(0, 
         ((gray - 128) * contrast) + 128
       ));
+      
+      // Add slight brightness for flash effect
+      brightened = Math.min(255, brightened + 15);
       
       data[i] = brightened;
       data[i + 1] = brightened;
       data[i + 2] = brightened;
 
+      // Add vignette and light leak effects
       const x = (i / 4) % canvas.width;
       const y = Math.floor((i / 4) / canvas.width);
       const centerX = canvas.width / 2;
@@ -78,32 +97,27 @@ export default function Camera({ onCapture, countdown }: CameraProps) {
       const dy = (y - centerY) / centerY;
       const distance = Math.sqrt(dx * dx + dy * dy);
       
-      const vignette = Math.pow(Math.cos(Math.min(Math.PI / 2, distance * 1.2)), 1.5);
+      // Stronger vignette
+      const vignette = Math.pow(Math.cos(Math.min(Math.PI / 2, distance * 1.5)), 2.5);
       
-      data[i] *= vignette;
-      data[i + 1] *= vignette;
-      data[i + 2] *= vignette;
+      // Add light leak effect at the top
+      const leakIntensity = Math.max(0, 1 - (y / (canvas.height * 0.4)));
+      const leak = leakIntensity * 0.15; // Subtle light leak
       
-      if (Math.random() > 0.98) {
-        const noise = Math.random() * 30;
-        data[i] = Math.min(255, data[i] + noise);
-        data[i+1] = Math.min(255, data[i+1] + noise);
-        data[i+2] = Math.min(255, data[i+2] + noise);
-      }
+      data[i] = Math.min(255, data[i] * vignette + (leak * 255));
+      data[i + 1] = Math.min(255, data[i + 1] * vignette + (leak * 255));
+      data[i + 2] = Math.min(255, data[i + 2] * vignette + (leak * 255));
+    }
+
+    // Add noise
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 15; // Adjust noise intensity
+      data[i] = Math.min(255, Math.max(0, data[i] + noise));
+      data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+      data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
     }
 
     ctx.putImageData(imageData, 0, 0);
-    
-    // Add some scratches
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i < 5; i++) {
-      ctx.beginPath();
-      const x = Math.random() * canvas.width;
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x + Math.random() * 50 - 25, canvas.height);
-      ctx.stroke();
-    }
   };
 
   const captureImage = () => {

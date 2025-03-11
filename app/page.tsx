@@ -19,7 +19,7 @@ export default function PhotoBooth() {
       }
       setCountdown(null);
       setFlash(true);
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       setFlash(false);
       
       if (i < 2) {
@@ -41,7 +41,7 @@ export default function PhotoBooth() {
   return (
     <div className="min-h-screen bg-zinc-900 py-6 relative">
       {flash && (
-        <div className="fixed inset-0 bg-white animate-flash z-50"></div>
+        <div className="fixed inset-0 bg-white/90 animate-flash z-50 backdrop-blur-sm"></div>
       )}
       <div className="container mx-auto px-4 max-w-2xl">
         <div className="relative flex justify-center mb-8">
