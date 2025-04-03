@@ -4,11 +4,51 @@ import { motion } from 'framer-motion';
 
 const filters = [
   { id: 'normal', name: 'Normal', class: '' },
-  { id: 'vintage', name: 'Vintage', class: 'sepia brightness-90' },
-  { id: 'bw', name: 'B&W', class: 'grayscale' },
-  { id: 'soft', name: 'Soft', class: 'brightness-105 contrast-95 saturate-95' },
-  { id: 'warm', name: 'Warm', class: 'brightness-105 saturate-110' },
-  { id: 'cool', name: 'Cool', class: 'brightness-100 saturate-90 hue-rotate-15' },
+  { 
+    id: 'vintage', 
+    name: 'Vintage', 
+    class: 'sepia brightness-90 contrast-110 saturate-85'
+  },
+  { 
+    id: 'dreamy', 
+    name: 'Dreamy', 
+    class: 'brightness-110 contrast-95 saturate-85 blur-[0.4px]'
+  },
+  { 
+    id: 'retro', 
+    name: 'Retro', 
+    class: 'sepia-[.35] contrast-125 brightness-95 saturate-95'
+  },
+  { 
+    id: 'film', 
+    name: 'Film', 
+    class: 'contrast-115 brightness-95 saturate-85 hue-rotate-[5deg]'
+  },
+  { 
+    id: 'soft', 
+    name: 'Soft', 
+    class: 'brightness-105 contrast-90 saturate-95'
+  },
+  { 
+    id: 'warm', 
+    name: 'Warm', 
+    class: 'brightness-105 saturate-110 sepia-[.15]'
+  },
+  { 
+    id: 'cool', 
+    name: 'Cool', 
+    class: 'brightness-100 saturate-90 hue-rotate-[10deg]'
+  },
+  { 
+    id: 'faded', 
+    name: 'Faded', 
+    class: 'contrast-90 brightness-110 saturate-75'
+  },
+  { 
+    id: 'moody', 
+    name: 'Moody', 
+    class: 'contrast-125 brightness-85 saturate-90'
+  }
 ];
 
 interface FilterSelectorProps {
