@@ -15,6 +15,7 @@ const stickers: Sticker[] = [
   { id: 'heart-red', icon: <HeartIcon className="w-full h-full" />, color: '#ff4444' },
   { id: 'heart-yellow', icon: <HeartIcon className="w-full h-full" />, color: '#FFD700' },
   { id: 'heart-black', icon: <HeartIcon className="w-full h-full" />, color: '#000000' },
+  { id: 'heart-white', icon: <HeartIcon className="w-full h-full" />, color: '#ffffff' },
   { id: 'sparkle', icon: <SparklesIcon className="w-full h-full" />, color: '#ffd700' },
   { id: 'star', icon: <StarIcon className="w-full h-full" />, color: '#ffa500' },
 ];
@@ -25,7 +26,7 @@ interface StickerPickerProps {
 
 export default function StickerPicker({ onSelectSticker }: StickerPickerProps) {
   return (
-    <div className="grid grid-cols-4 gap-2">
+    <div className="grid grid-cols-4 gap-2 p-3 bg-gray-900 rounded-lg">
       {stickers.map((sticker) => (
         <motion.button
           key={sticker.id}

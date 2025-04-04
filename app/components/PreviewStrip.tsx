@@ -3,7 +3,21 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowDownTrayIcon, SwatchIcon, HeartIcon } from '@heroicons/react/24/solid';
 import { useState, useRef, ReactNode } from 'react';
+import Image from 'next/image';
 import StickerPicker from './StickerPicker';
+
+declare global {
+  interface Window {
+    Path2D: {
+      new(path?: string): Path2D;
+      prototype: Path2D;
+    }
+    Image: {
+      new(): HTMLImageElement;
+      prototype: HTMLImageElement;
+    }
+  }
+}
 
 interface PreviewStripProps {
   photos: string[];
@@ -18,6 +32,12 @@ interface PlacedSticker {
   color: string;
   rotation: number;
   scale: number;
+}
+
+interface Sticker {
+  id: string;
+  icon: ReactNode;
+  color: string;
 }
 
 const stripColors = [
@@ -36,7 +56,7 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
   const [placedStickers, setPlacedStickers] = useState<PlacedSticker[]>([]);
   const stripRef = useRef<HTMLDivElement>(null);
 
-  const handleStickerSelect = (sticker: any) => {
+  const handleStickerSelect = (sticker: Sticker) => {
     const stripElement = stripRef.current;
     if (!stripElement) return;
 
@@ -81,7 +101,7 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
 
     const loadImage = (src: string): Promise<HTMLImageElement> => {
       return new Promise((resolve) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => resolve(img);
         img.src = src;
       });
@@ -125,10 +145,13 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
         ctx.rotate((sticker.rotation * Math.PI) / 180);
         ctx.scale(sticker.scale, sticker.scale);
         
-        // Draw sticker icon
+        // Draw heart shape directly
         ctx.fillStyle = sticker.color;
-        const path = new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
-        ctx.fill(path);
+        ctx.beginPath();
+        ctx.moveTo(12, 21.35);
+        ctx.bezierCurveTo(40, 10, 40, -10, 12, 4);
+        ctx.bezierCurveTo(-16, -10, -16, 10, 12, 21.35);
+        ctx.fill();
         
         ctx.restore();
       });
@@ -161,10 +184,13 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
               marginBottom: index === 2 ? '2.5rem' : '1.5rem'
             }}
           >
-            <img
+            <Image
               src={photo}
               alt={`Photo ${index + 1}`}
               className={`w-full h-full object-cover rounded shadow-sm ${filterClass}`}
+              width={400}
+              height={225}
+              priority={true}
             />
           </motion.div>
         ))}
