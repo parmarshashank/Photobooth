@@ -3,51 +3,55 @@
 import { motion } from 'framer-motion';
 
 const filters = [
-  { id: 'normal', name: 'Normal', class: '' },
+  { 
+    id: 'normal', 
+    name: 'Normal', 
+    class: '' 
+  },
   { 
     id: 'vintage', 
     name: 'Vintage', 
-    class: 'sepia brightness-90 contrast-110 saturate-85'
+    class: 'sepia-[0.6] contrast-125 brightness-95 saturate-70 hue-rotate-[355deg]'
   },
   { 
     id: 'dreamy', 
     name: 'Dreamy', 
-    class: 'brightness-110 contrast-95 saturate-85 blur-[0.4px]'
+    class: 'brightness-125 contrast-75 saturate-75 blur-[1px] opacity-90'
   },
   { 
     id: 'retro', 
-    name: 'Retro', 
-    class: 'sepia-[.35] contrast-125 brightness-95 saturate-95'
+    name: 'Retro 70s', 
+    class: 'sepia-[0.35] contrast-150 brightness-90 saturate-150 hue-rotate-[10deg]'
   },
   { 
-    id: 'film', 
-    name: 'Film', 
-    class: 'contrast-115 brightness-95 saturate-85 hue-rotate-[5deg]'
+    id: 'noir', 
+    name: 'Noir', 
+    class: 'grayscale contrast-150 brightness-90'
   },
   { 
-    id: 'soft', 
-    name: 'Soft', 
-    class: 'brightness-105 contrast-90 saturate-95'
+    id: 'polaroid', 
+    name: 'Polaroid', 
+    class: 'contrast-110 brightness-110 saturate-110 sepia-[0.15] hue-rotate-[5deg]'
   },
   { 
-    id: 'warm', 
-    name: 'Warm', 
-    class: 'brightness-105 saturate-110 sepia-[.15]'
+    id: 'summer', 
+    name: 'Summer', 
+    class: 'brightness-120 contrast-110 saturate-150 hue-rotate-[355deg]'
   },
   { 
-    id: 'cool', 
-    name: 'Cool', 
-    class: 'brightness-100 saturate-90 hue-rotate-[10deg]'
+    id: 'winter', 
+    name: 'Winter', 
+    class: 'brightness-110 contrast-110 saturate-75 hue-rotate-[180deg]'
   },
   { 
-    id: 'faded', 
-    name: 'Faded', 
-    class: 'contrast-90 brightness-110 saturate-75'
+    id: 'dramatic', 
+    name: 'Dramatic', 
+    class: 'contrast-175 brightness-75 saturate-125 hue-rotate-[5deg]'
   },
   { 
-    id: 'moody', 
-    name: 'Moody', 
-    class: 'contrast-125 brightness-85 saturate-90'
+    id: 'cyberpunk', 
+    name: 'Cyberpunk', 
+    class: 'contrast-150 brightness-110 saturate-200 hue-rotate-[300deg]'
   }
 ];
 
