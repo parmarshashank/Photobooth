@@ -15,8 +15,17 @@ export default function CameraFrame({ onPhotoCapture, photosCount }: CameraFrame
   const [isCountingDown, setIsCountingDown] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const [showFlash, setShowFlash] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const photoSequenceRef = useRef(0);
+
+  // Define video constraints
+  const videoConstraints = {
+    width: { ideal: 1280, max: 1920 },
+    height: { ideal: 720, max: 1080 },
+    facingMode: { ideal: "user" },
+    aspectRatio: 16/9
+  };
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
@@ -61,6 +70,22 @@ export default function CameraFrame({ onPhotoCapture, photosCount }: CameraFrame
     photoSequenceRef.current = 0;
     setIsCountingDown(true);
     setCountdown(3);
+    setCameraError(null);
+  }, []);
+
+  const handleUserMediaError = useCallback((error: string | DOMException) => {
+    console.error('Camera error:', error);
+    let errorMessage = 'Could not access camera. Please ensure you have granted camera permissions.';
+    if (error instanceof DOMException) {
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Camera access was denied. Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage = 'No camera device was found on your device.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage = 'Could not access your camera. It may be in use by another application.';
+      }
+    }
+    setCameraError(errorMessage);
   }, []);
 
   return (
@@ -82,17 +107,34 @@ export default function CameraFrame({ onPhotoCapture, photosCount }: CameraFrame
         </div>
         
         <div className="relative">
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            className="w-full rounded-2xl"
-            videoConstraints={{
-              width: 1280,
-              height: 720,
-              facingMode: "user"
-            }}
-          />
+          {cameraError ? (
+            <div className="aspect-video bg-gray-100 rounded-2xl flex items-center justify-center p-4">
+              <div className="text-center text-gray-600">
+                <p className="mb-2">{cameraError}</p>
+                <button
+                  onClick={() => {
+                    setCameraError(null);
+                    if (webcamRef.current) {
+                      webcamRef.current.stream = null;
+                    }
+                  }}
+                  className="text-pink-500 hover:text-pink-600 font-medium"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              className="w-full rounded-2xl"
+              videoConstraints={videoConstraints}
+              onUserMediaError={handleUserMediaError}
+              mirrored
+            />
+          )}
           <AnimatePresence>
             {showFlash && (
               <motion.div
