@@ -1,12 +1,23 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowDownTrayIcon, SwatchIcon } from '@heroicons/react/24/solid';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDownTrayIcon, SwatchIcon, HeartIcon } from '@heroicons/react/24/solid';
+import { useState, useRef, ReactNode } from 'react';
+import StickerPicker from './StickerPicker';
 
 interface PreviewStripProps {
   photos: string[];
   filterClass: string;
+}
+
+interface PlacedSticker {
+  id: string;
+  x: number;
+  y: number;
+  icon: ReactNode;
+  color: string;
+  rotation: number;
+  scale: number;
 }
 
 const stripColors = [
@@ -21,6 +32,28 @@ const stripColors = [
 export default function PreviewStrip({ photos, filterClass }: PreviewStripProps) {
   const [selectedColor, setSelectedColor] = useState(stripColors[0]);
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const [placedStickers, setPlacedStickers] = useState<PlacedSticker[]>([]);
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  const handleStickerSelect = (sticker: any) => {
+    const stripElement = stripRef.current;
+    if (!stripElement) return;
+
+    const rect = stripElement.getBoundingClientRect();
+    const randomX = Math.random() * (rect.width - 40); // 40px is approx sticker size
+    const randomY = Math.random() * (rect.height - 40);
+    const randomRotation = Math.random() * 360;
+    const randomScale = 0.8 + Math.random() * 0.4; // Scale between 0.8 and 1.2
+
+    setPlacedStickers(prev => [...prev, {
+      ...sticker,
+      x: randomX,
+      y: randomY,
+      rotation: randomRotation,
+      scale: randomScale
+    }]);
+  };
 
   const downloadStrip = () => {
     const canvas = document.createElement('canvas');
@@ -74,6 +107,32 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
         ctx.drawImage(img, sideMargin, y, photoWidth, photoHeight);
       });
 
+      // Draw stickers
+      placedStickers.forEach(sticker => {
+        // Scale sticker positions to canvas size
+        const stripElement = stripRef.current;
+        if (!stripElement) return;
+        
+        const stripRect = stripElement.getBoundingClientRect();
+        const scaleX = canvas.width / stripRect.width;
+        const scaleY = canvas.height / stripRect.height;
+        
+        const x = sticker.x * scaleX;
+        const y = sticker.y * scaleY;
+        
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate((sticker.rotation * Math.PI) / 180);
+        ctx.scale(sticker.scale, sticker.scale);
+        
+        // Draw sticker icon
+        ctx.fillStyle = sticker.color;
+        const path = new Path2D('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');
+        ctx.fill(path);
+        
+        ctx.restore();
+      });
+
       const link = document.createElement('a');
       link.download = 'photobooth-strip.jpg';
       link.href = canvas.toDataURL('image/jpeg', 0.95);
@@ -84,9 +143,10 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
   return (
     <div className="fixed bottom-8 right-8 w-64">
       <motion.div
+        ref={stripRef}
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="polaroid p-6 space-y-4"
+        className="polaroid p-6 space-y-4 relative"
         style={{ backgroundColor: selectedColor.bg }}
       >
         {photos.map((photo, index) => (
@@ -98,7 +158,7 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
             className="relative w-full"
             style={{ 
               aspectRatio: '16/9',
-              marginBottom: index === 2 ? '2.5rem' : '1.5rem' // Extra space after last photo
+              marginBottom: index === 2 ? '2.5rem' : '1.5rem'
             }}
           >
             <img
@@ -108,6 +168,26 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
             />
           </motion.div>
         ))}
+
+        <AnimatePresence>
+          {placedStickers.map((sticker, index) => (
+            <motion.div
+              key={`${sticker.id}-${index}`}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className="absolute w-8 h-8"
+              style={{
+                left: `${sticker.x}px`,
+                top: `${sticker.y}px`,
+                transform: `rotate(${sticker.rotation}deg) scale(${sticker.scale})`,
+                color: sticker.color
+              }}
+            >
+              {sticker.icon}
+            </motion.div>
+          ))}
+        </AnimatePresence>
         
         {photos.length === 3 && (
           <div className="space-y-3 pt-2">
@@ -140,6 +220,27 @@ export default function PreviewStrip({ photos, filterClass }: PreviewStripProps)
                     title={color.name}
                   />
                 ))}
+              </motion.div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowStickerPicker(!showStickerPicker)}
+              className="button-3d w-full flex items-center justify-center"
+              style={{ color: selectedColor.text }}
+            >
+              <HeartIcon className="w-5 h-5 mr-2" />
+              Add Stickers
+            </motion.button>
+
+            {showStickerPicker && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-2"
+              >
+                <StickerPicker onSelectSticker={handleStickerSelect} />
               </motion.div>
             )}
 
